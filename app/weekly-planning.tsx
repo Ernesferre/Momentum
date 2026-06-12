@@ -1,12 +1,46 @@
+import { useState } from "react";
 import { Text, View } from "react-native";
 import { DayCard } from "../src/components/DayCard";
 import { colors } from "../src/theme/colors";
 import { spacing } from "../src/theme/spacing";
 import { typography } from "../src/theme/typography";
+import { Habit, WeekHabits } from "../src/types/habit";
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
 export default function WeeklyPlanning() {
+  const [weekHabits, setWeekHabits] = useState<WeekHabits>({
+    Lunes: [],
+    Martes: [],
+    Miércoles: [],
+    Jueves: [],
+    Viernes: [],
+  });
+
+  const handleAddHabit = (day: string, habitName: string) => {
+    const newHabit: Habit = {
+      id: Date.now().toString(),
+      name: habitName,
+      completed: false,
+    };
+
+    setWeekHabits((prev) => ({
+      ...prev,
+      [day]: [...prev[day], newHabit],
+    }));
+  };
+
+  const handleToggleHabit = (day: string, habitId: string) => {
+    setWeekHabits((prev) => ({
+      ...prev,
+      [day]: prev[day].map((habit) =>
+        habit.id === habitId
+          ? { ...habit, completed: !habit.completed }
+          : habit,
+      ),
+    }));
+  };
+
   return (
     <View
       style={{
@@ -38,7 +72,13 @@ export default function WeeklyPlanning() {
       </Text>
 
       {days.map((day) => (
-        <DayCard key={day} day={day} />
+        <DayCard
+          key={day}
+          day={day}
+          habits={weekHabits[day]}
+          onAddHabit={handleAddHabit}
+          onToggleHabit={handleToggleHabit}
+        />
       ))}
     </View>
   );

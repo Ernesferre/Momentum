@@ -3,21 +3,23 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
+import { Habit } from "../types/habit";
 
 type DayCardProps = {
   day: string;
+  habits: Habit[];
+  onAddHabit: (day: string, habitName: string) => void;
+  onToggleHabit: (day: string, habitId: string) => void;
 };
 
-type Habit = {
-  id: string;
-  name: string;
-  completed: boolean;
-};
-
-export function DayCard({ day }: DayCardProps) {
+export function DayCard({
+  day,
+  habits,
+  onAddHabit,
+  onToggleHabit,
+}: DayCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [habitName, setHabitName] = useState("");
-  const [habits, setHabits] = useState<Habit[]>([]);
 
   const handleAddHabit = () => {
     setIsAdding(true);
@@ -26,25 +28,10 @@ export function DayCard({ day }: DayCardProps) {
   const handleSaveHabit = () => {
     if (!habitName.trim()) return;
 
-    const newHabit: Habit = {
-      id: Date.now().toString(),
-      name: habitName.trim(),
-      completed: false,
-    };
+    onAddHabit(day, habitName.trim());
 
-    setHabits((prev) => [...prev, newHabit]);
     setHabitName("");
     setIsAdding(false);
-  };
-
-  const handleToggleHabit = (habitId: string) => {
-    setHabits((prev) =>
-      prev.map((habit) =>
-        habit.id === habitId
-          ? { ...habit, completed: !habit.completed }
-          : habit,
-      ),
-    );
   };
 
   const handleCancelAddHabit = () => {
@@ -102,7 +89,7 @@ export function DayCard({ day }: DayCardProps) {
               onPress={handleSaveHabit}
               style={{
                 flex: 1,
-                backgroundColor: "green",
+                backgroundColor: colors.primary,
                 paddingVertical: spacing.sm,
                 borderRadius: 10,
                 alignItems: "center",
@@ -136,10 +123,8 @@ export function DayCard({ day }: DayCardProps) {
       {habits.map((habit) => (
         <TouchableOpacity
           key={habit.id}
-          onPress={() => handleToggleHabit(habit.id)}
-          style={{
-            marginTop: spacing.sm,
-          }}
+          onPress={() => onToggleHabit(day, habit.id)}
+          style={{ marginTop: spacing.sm }}
         >
           <Text
             style={{
@@ -152,25 +137,22 @@ export function DayCard({ day }: DayCardProps) {
         </TouchableOpacity>
       ))}
 
-      <TouchableOpacity
-        onPress={handleAddHabit}
-        style={{
-          marginTop: spacing.md,
-          backgroundColor: colors.primary,
-          paddingVertical: spacing.sm,
-          borderRadius: 10,
-          alignItems: "center",
-        }}
-      >
-        <Text
+      {!isAdding && (
+        <TouchableOpacity
+          onPress={handleAddHabit}
           style={{
-            color: colors.text,
-            fontWeight: "600",
+            marginTop: spacing.md,
+            backgroundColor: colors.primary,
+            paddingVertical: spacing.sm,
+            borderRadius: 10,
+            alignItems: "center",
           }}
         >
-          + Agregar hábito
-        </Text>
-      </TouchableOpacity>
+          <Text style={{ color: colors.text, fontWeight: "600" }}>
+            + Agregar hábito
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
