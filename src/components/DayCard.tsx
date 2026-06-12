@@ -21,17 +21,18 @@ export function DayCard({
   const [isAdding, setIsAdding] = useState(false);
   const [habitName, setHabitName] = useState("");
 
+  const isSaveDisabled = habitName.trim().length === 0;
+
   const handleAddHabit = () => {
     setIsAdding(true);
   };
 
   const handleSaveHabit = () => {
-    if (!habitName.trim()) return;
+    if (isSaveDisabled) return;
 
     onAddHabit(day, habitName.trim());
 
     setHabitName("");
-    setIsAdding(false);
   };
 
   const handleCancelAddHabit = () => {
@@ -65,6 +66,7 @@ export function DayCard({
       {isAdding && (
         <>
           <TextInput
+            autoFocus
             value={habitName}
             onChangeText={setHabitName}
             placeholder="Nuevo hábito"
@@ -87,15 +89,24 @@ export function DayCard({
           >
             <TouchableOpacity
               onPress={handleSaveHabit}
+              disabled={isSaveDisabled}
               style={{
                 flex: 1,
-                backgroundColor: colors.primary,
+                backgroundColor: isSaveDisabled
+                  ? colors.border
+                  : colors.primary,
                 paddingVertical: spacing.sm,
                 borderRadius: 10,
                 alignItems: "center",
+                opacity: isSaveDisabled ? 0.6 : 1,
               }}
             >
-              <Text style={{ color: colors.text, fontWeight: "600" }}>
+              <Text
+                style={{
+                  color: colors.text,
+                  fontWeight: "600",
+                }}
+              >
                 Guardar
               </Text>
             </TouchableOpacity>
