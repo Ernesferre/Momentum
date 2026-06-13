@@ -10,6 +10,7 @@ type DayCardProps = {
   habits: Habit[];
   onAddHabit: (day: string, habitName: string) => void;
   onToggleHabit: (day: string, habitId: string) => void;
+  onDeleteHabit: (day: string, habitId: string) => void;
 };
 
 export function DayCard({
@@ -17,11 +18,26 @@ export function DayCard({
   habits,
   onAddHabit,
   onToggleHabit,
+  onDeleteHabit,
 }: DayCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [habitName, setHabitName] = useState("");
 
   const isSaveDisabled = habitName.trim().length === 0;
+
+  const completedHabits = habits.filter((habit) => habit.completed).length;
+  const totalHabits = habits.length;
+
+  const progressPercentage =
+    totalHabits === 0 ? 0 : Math.round((completedHabits / totalHabits) * 100);
+
+  const getDayStatusIcon = () => {
+    if (totalHabits === 0) return "⚪";
+    if (progressPercentage === 0) return "🔴";
+    if (progressPercentage < 50) return "🟠";
+    if (progressPercentage < 100) return "🟡";
+    return "🟢";
+  };
 
   const handleAddHabit = () => {
     setIsAdding(true);
@@ -31,7 +47,6 @@ export function DayCard({
     if (isSaveDisabled) return;
 
     onAddHabit(day, habitName.trim());
-
     setHabitName("");
   };
 
@@ -50,18 +65,60 @@ export function DayCard({
         borderWidth: 1,
         borderColor: colors.border,
         minHeight: 120,
-        justifyContent: "space-between",
       }}
     >
-      <Text
+      <View
         style={{
-          color: colors.text,
-          fontSize: typography.subtitle.fontSize,
-          fontWeight: "700",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
-        {day}
-      </Text>
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: typography.subtitle.fontSize,
+            fontWeight: "700",
+          }}
+        >
+          {day}
+        </Text>
+
+        <Text style={{ fontSize: 18 }}>{getDayStatusIcon()}</Text>
+      </View>
+
+      {totalHabits > 0 && (
+        <>
+          <Text
+            style={{
+              color: colors.textSecondary,
+              fontSize: 13,
+              marginTop: spacing.xs,
+            }}
+          >
+            {completedHabits} / {totalHabits} completados
+          </Text>
+
+          <View
+            style={{
+              height: 4,
+              backgroundColor: colors.background,
+              borderRadius: 999,
+              marginTop: spacing.sm,
+              overflow: "hidden",
+            }}
+          >
+            <View
+              style={{
+                height: "100%",
+                width: `${progressPercentage}%`,
+                backgroundColor: colors.primary,
+                borderRadius: 999,
+              }}
+            />
+          </View>
+        </>
+      )}
 
       {isAdding && (
         <>
@@ -76,7 +133,7 @@ export function DayCard({
               color: colors.text,
               padding: spacing.sm,
               borderRadius: 10,
-              marginTop: spacing.sm,
+              marginTop: spacing.md,
             }}
           />
 
@@ -94,7 +151,7 @@ export function DayCard({
                 flex: 1,
                 backgroundColor: isSaveDisabled
                   ? colors.border
-                  : colors.primary,
+                  : colors.warning,
                 paddingVertical: spacing.sm,
                 borderRadius: 10,
                 alignItems: "center",
@@ -103,7 +160,7 @@ export function DayCard({
             >
               <Text
                 style={{
-                  color: colors.text,
+                  color: isSaveDisabled ? colors.textSecondary : colors.border,
                   fontWeight: "600",
                 }}
               >
@@ -132,20 +189,55 @@ export function DayCard({
       )}
 
       {habits.map((habit) => (
-        <TouchableOpacity
+        <View
           key={habit.id}
-          onPress={() => onToggleHabit(day, habit.id)}
-          style={{ marginTop: spacing.sm }}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: spacing.md,
+          }}
         >
-          <Text
-            style={{
-              color: habit.completed ? colors.textSecondary : colors.text,
-              textDecorationLine: habit.completed ? "line-through" : "none",
-            }}
+          <TouchableOpacity
+            onPress={() => onToggleHabit(day, habit.id)}
+            style={{ flex: 1 }}
           >
-            {habit.completed ? "✓" : "○"} {habit.name}
-          </Text>
-        </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: habit.completed
+                    ? colors.primary
+                    : colors.textSecondary,
+                  marginRight: spacing.sm,
+                  fontSize: 18,
+                }}
+              >
+                {habit.completed ? "☑" : "☐"}
+              </Text>
+
+              <Text
+                style={{
+                  color: habit.completed ? colors.textSecondary : colors.text,
+                  textDecorationLine: habit.completed ? "line-through" : "none",
+                }}
+              >
+                {habit.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => onDeleteHabit(day, habit.id)}
+            style={{ padding: spacing.sm }}
+          >
+            <Text style={{ color: colors.textSecondary, fontSize: 18 }}>✕</Text>
+          </TouchableOpacity>
+        </View>
       ))}
 
       {!isAdding && (

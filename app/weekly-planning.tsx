@@ -24,7 +24,6 @@ export default function WeeklyPlanning() {
     const loadWeekHabits = async () => {
       try {
         const storedWeekHabits = await AsyncStorage.getItem(STORAGE_KEY);
-        debugger;
 
         if (storedWeekHabits) {
           setWeekHabits(JSON.parse(storedWeekHabits));
@@ -79,6 +78,13 @@ export default function WeeklyPlanning() {
           ? { ...habit, completed: !habit.completed }
           : habit,
       ),
+    }));
+  };
+
+  const handleDeleteHabit = (day: string, habitId: string) => {
+    setWeekHabits((prev) => ({
+      ...prev,
+      [day]: prev[day].filter((habit) => habit.id !== habitId),
     }));
   };
 
@@ -177,6 +183,7 @@ export default function WeeklyPlanning() {
           habits={weekHabits[day]}
           onAddHabit={handleAddHabit}
           onToggleHabit={handleToggleHabit}
+          onDeleteHabit={handleDeleteHabit}
         />
       ))}
     </View>

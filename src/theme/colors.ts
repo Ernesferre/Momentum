@@ -5,4 +5,5 @@ export const colors = {
   text: "#FFFFFF",
   textSecondary: "#A1A1AA",
   border: "#2A2A2A",
+  warning: "#FACC15",
 };
