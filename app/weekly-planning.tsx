@@ -1,4 +1,5 @@
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { DayCard } from "../src/components/DayCard";
 import { colors } from "../src/theme/colors";
@@ -8,6 +9,8 @@ import { Habit, WeekHabits } from "../src/types/habit";
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
+const STORAGE_KEY = "@momentum_week_habits";
+
 export default function WeeklyPlanning() {
   const [weekHabits, setWeekHabits] = useState<WeekHabits>({
     Lunes: [],
@@ -16,6 +19,35 @@ export default function WeeklyPlanning() {
     Jueves: [],
     Viernes: [],
   });
+
+  useEffect(() => {
+    const loadWeekHabits = async () => {
+      try {
+        const storedWeekHabits = await AsyncStorage.getItem(STORAGE_KEY);
+        debugger;
+
+        if (storedWeekHabits) {
+          setWeekHabits(JSON.parse(storedWeekHabits));
+        }
+      } catch (error) {
+        console.log("Error loading week habits", error);
+      }
+    };
+
+    loadWeekHabits();
+  }, []);
+
+  useEffect(() => {
+    const saveWeekHabits = async () => {
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(weekHabits));
+      } catch (error) {
+        console.log("Error saving week habits", error);
+      }
+    };
+
+    saveWeekHabits();
+  }, [weekHabits]);
 
   const allHabits = Object.values(weekHabits).flat();
 
