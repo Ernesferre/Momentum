@@ -56,6 +56,25 @@ export default function StatsScreen() {
     (day) => day.total > 0 && day.completed === day.total,
   );
 
+  const perfectDaysInOrder = daysStats.map(
+    (day) => day.total > 0 && day.completed === day.total,
+  );
+
+  let currentStreak = 0;
+  let bestStreak = 0;
+
+  for (const isPerfectDay of perfectDaysInOrder) {
+    if (isPerfectDay) {
+      currentStreak++;
+
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+      }
+    } else {
+      currentStreak = 0;
+    }
+  }
+
   const daysWithHabits = daysStats.filter((day) => day.total > 0);
 
   const bestPercentage = daysWithHabits.length
@@ -305,6 +324,40 @@ export default function StatsScreen() {
             }}
           >
             {perfectDays.length} de 5 días completados al 100%
+          </Text>
+        </View>
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 16,
+            padding: spacing.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
+            marginTop: spacing.md,
+          }}
+        >
+          <Text style={{ color: colors.textSecondary }}>
+            🏆 Mejor racha semanal
+          </Text>
+
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 24,
+              fontWeight: "700",
+              marginTop: spacing.sm,
+            }}
+          >
+            {bestStreak} días
+          </Text>
+
+          <Text
+            style={{
+              color: colors.textSecondary,
+              marginTop: spacing.sm,
+            }}
+          >
+            Días perfectos consecutivos
           </Text>
         </View>
       </View>
