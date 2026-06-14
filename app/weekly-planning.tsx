@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { DayCard } from "../src/components/DayCard";
 import { colors } from "../src/theme/colors";
 import { spacing } from "../src/theme/spacing";
@@ -178,6 +179,23 @@ export default function WeeklyPlanning() {
           />
         </View>
       </View>
+
+      <TouchableOpacity
+        onPress={() => router.push("/stats")}
+        style={{
+          backgroundColor: colors.surface,
+          padding: spacing.md,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginBottom: spacing.lg,
+          alignItems: "center",
+        }}
+      >
+        <Text style={{ color: colors.text, fontWeight: "600" }}>
+          📈 Ver estadísticas
+        </Text>
+      </TouchableOpacity>
 
       {days.map((day) => (
         <DayCard

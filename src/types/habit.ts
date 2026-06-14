@@ -5,3 +5,8 @@ export type Habit = {
 };
 
 export type WeekHabits = Record<string, Habit[]>;
+
+export type WeekPlan = {
+  weekId: string;
+  habits: WeekHabits;
+};
