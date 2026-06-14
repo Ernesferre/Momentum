@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { colors } from "../theme/colors";
 import { spacing } from "../theme/spacing";
 import { typography } from "../theme/typography";
@@ -54,6 +61,37 @@ export function DayCard({
     setHabitName("");
     setIsAdding(false);
   };
+
+  const handleDeleteHabit = (habitId: string) => {
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "¿Estás seguro de que querés eliminar este hábito?",
+      );
+
+      if (confirmed) {
+        onDeleteHabit(day, habitId);
+      }
+
+      return;
+    }
+
+    Alert.alert(
+      "Eliminar hábito",
+      "¿Estás seguro de que querés eliminar este hábito?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => onDeleteHabit(day, habitId),
+        },
+      ],
+    );
+  };
+
+  const sortedHabits = [...habits].sort(
+    (a, b) => Number(a.completed) - Number(b.completed),
+  );
 
   return (
     <View
@@ -188,7 +226,20 @@ export function DayCard({
         </>
       )}
 
-      {habits.map((habit) => (
+      {habits.length === 0 && !isAdding && (
+        <Text
+          style={{
+            color: colors.textSecondary,
+            fontSize: 13,
+            marginTop: spacing.md,
+            fontStyle: "italic",
+          }}
+        >
+          Sin hábitos planificados.
+        </Text>
+      )}
+
+      {sortedHabits.map((habit) => (
         <View
           key={habit.id}
           style={{
@@ -232,7 +283,7 @@ export function DayCard({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => onDeleteHabit(day, habit.id)}
+            onPress={() => handleDeleteHabit(habit.id)}
             style={{ padding: spacing.sm }}
           >
             <Text style={{ color: colors.textSecondary, fontSize: 18 }}>✕</Text>

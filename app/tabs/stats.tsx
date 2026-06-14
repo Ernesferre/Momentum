@@ -1,13 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
-import { colors } from "../src/theme/colors";
-import { spacing } from "../src/theme/spacing";
-import { typography } from "../src/theme/typography";
-import { WeekHabits } from "../src/types/habit";
-
-const STORAGE_KEY = "@momentum_week_habits";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { loadWeekHabits } from "../../src/services/storage.service";
+import { colors } from "../../src/theme/colors";
+import { spacing } from "../../src/theme/spacing";
+import { typography } from "../../src/theme/typography";
+import { WeekHabits } from "../../src/types/habit";
 
 export default function StatsScreen() {
   const [weekHabits, setWeekHabits] = useState<WeekHabits>({
@@ -18,17 +16,19 @@ export default function StatsScreen() {
     Viernes: [],
   });
 
-  useEffect(() => {
-    const loadWeekHabits = async () => {
-      const storedWeekHabits = await AsyncStorage.getItem(STORAGE_KEY);
+  useFocusEffect(
+    useCallback(() => {
+      const loadStoredWeekHabits = async () => {
+        const storedWeekHabits = await loadWeekHabits();
 
-      if (storedWeekHabits) {
-        setWeekHabits(JSON.parse(storedWeekHabits));
-      }
-    };
+        if (storedWeekHabits) {
+          setWeekHabits(storedWeekHabits);
+        }
+      };
 
-    loadWeekHabits();
-  }, []);
+      loadStoredWeekHabits();
+    }, []),
+  );
 
   const allHabits = Object.values(weekHabits).flat();
   const completedHabits = allHabits.filter((habit) => habit.completed);
@@ -52,6 +52,10 @@ export default function StatsScreen() {
     };
   });
 
+  const perfectDays = daysStats.filter(
+    (day) => day.total > 0 && day.completed === day.total,
+  );
+
   const daysWithHabits = daysStats.filter((day) => day.total > 0);
 
   const bestPercentage = daysWithHabits.length
@@ -63,7 +67,7 @@ export default function StatsScreen() {
   );
 
   return (
-    <View
+    <ScrollView
       style={{
         flex: 1,
         backgroundColor: colors.background,
@@ -188,6 +192,122 @@ export default function StatsScreen() {
             : "Sin datos"}
         </Text>
       </View>
-    </View>
+      <View
+        style={{
+          backgroundColor: colors.surface,
+          borderRadius: 16,
+          padding: spacing.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          marginTop: spacing.md,
+        }}
+      >
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: typography.subtitle.fontSize,
+            fontWeight: "700",
+            marginBottom: spacing.md,
+          }}
+        >
+          Rendimiento por día
+        </Text>
+
+        {daysStats.map((dayStat) => {
+          const statusIcon =
+            dayStat.total === 0
+              ? "⚪"
+              : dayStat.percentage === 0
+                ? "🔴"
+                : dayStat.percentage < 50
+                  ? "🟠"
+                  : dayStat.percentage < 100
+                    ? "🟡"
+                    : "🟢";
+
+          return (
+            <View
+              key={dayStat.day}
+              style={{
+                marginBottom: spacing.md,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: spacing.xs,
+                }}
+              >
+                <Text style={{ color: colors.text }}>
+                  {statusIcon} {dayStat.day}
+                </Text>
+
+                <Text style={{ color: colors.textSecondary }}>
+                  {dayStat.total === 0
+                    ? "Sin hábitos"
+                    : `${dayStat.percentage}%`}
+                </Text>
+              </View>
+
+              {dayStat.total > 0 && (
+                <View
+                  style={{
+                    height: 5,
+                    backgroundColor: colors.background,
+                    borderRadius: 999,
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      height: "100%",
+                      width: `${dayStat.percentage}%`,
+                      backgroundColor: colors.primary,
+                      borderRadius: 999,
+                    }}
+                  />
+                </View>
+              )}
+            </View>
+          );
+        })}
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 16,
+            padding: spacing.lg,
+            borderWidth: 1,
+            borderColor: colors.border,
+            marginTop: spacing.md,
+          }}
+        >
+          <Text style={{ color: colors.textSecondary }}>🔥 Días perfectos</Text>
+
+          <Text
+            style={{
+              color: colors.text,
+              fontSize: 22,
+              fontWeight: "700",
+              marginTop: spacing.sm,
+            }}
+          >
+            {perfectDays.length > 0
+              ? perfectDays.map((day) => day.day).join(", ")
+              : "Todavía ninguno"}
+          </Text>
+
+          <Text
+            style={{
+              color: colors.textSecondary,
+              marginTop: spacing.sm,
+            }}
+          >
+            {perfectDays.length} de 5 días completados al 100%
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 }

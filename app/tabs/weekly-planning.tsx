@@ -1,52 +1,50 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { DayCard } from "../src/components/DayCard";
-import { colors } from "../src/theme/colors";
-import { spacing } from "../src/theme/spacing";
-import { typography } from "../src/theme/typography";
-import { Habit, WeekHabits } from "../src/types/habit";
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { DayCard } from "../../src/components/DayCard";
+import {
+  loadWeekHabits,
+  saveWeekHabits,
+} from "../../src/services/storage.service";
+import { colors } from "../../src/theme/colors";
+import { spacing } from "../../src/theme/spacing";
+import { typography } from "../../src/theme/typography";
+import { Habit, WeekHabits } from "../../src/types/habit";
 
 const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
-const STORAGE_KEY = "@momentum_week_habits";
+const EMPTY_WEEK_HABITS: WeekHabits = {
+  Lunes: [],
+  Martes: [],
+  Miércoles: [],
+  Jueves: [],
+  Viernes: [],
+};
 
 export default function WeeklyPlanning() {
-  const [weekHabits, setWeekHabits] = useState<WeekHabits>({
-    Lunes: [],
-    Martes: [],
-    Miércoles: [],
-    Jueves: [],
-    Viernes: [],
-  });
+  const [weekHabits, setWeekHabits] = useState<WeekHabits>(EMPTY_WEEK_HABITS);
 
   useEffect(() => {
-    const loadWeekHabits = async () => {
-      try {
-        const storedWeekHabits = await AsyncStorage.getItem(STORAGE_KEY);
+    const loadStoredWeekHabits = async () => {
+      const storedWeekHabits = await loadWeekHabits();
 
-        if (storedWeekHabits) {
-          setWeekHabits(JSON.parse(storedWeekHabits));
-        }
-      } catch (error) {
-        console.log("Error loading week habits", error);
+      if (storedWeekHabits) {
+        setWeekHabits(storedWeekHabits);
       }
     };
 
-    loadWeekHabits();
+    loadStoredWeekHabits();
   }, []);
 
   useEffect(() => {
-    const saveWeekHabits = async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(weekHabits));
-      } catch (error) {
-        console.log("Error saving week habits", error);
-      }
-    };
-
-    saveWeekHabits();
+    saveWeekHabits(weekHabits);
   }, [weekHabits]);
 
   const allHabits = Object.values(weekHabits).flat();
@@ -89,6 +87,40 @@ export default function WeeklyPlanning() {
     }));
   };
 
+  const handleResetWeek = () => {
+    const resetWeek = () => {
+      setWeekHabits(EMPTY_WEEK_HABITS);
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "¿Estás seguro de que querés borrar toda la planificación semanal?",
+      );
+
+      if (confirmed) {
+        resetWeek();
+      }
+
+      return;
+    }
+
+    Alert.alert(
+      "Resetear semana",
+      "¿Estás seguro de que querés borrar toda la planificación semanal?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Resetear",
+          style: "destructive",
+          onPress: resetWeek,
+        },
+      ],
+    );
+  };
+
   return (
     <ScrollView
       style={{
@@ -101,16 +133,31 @@ export default function WeeklyPlanning() {
         paddingBottom: spacing.xl,
       }}
     >
-      <Text
+      <View
         style={{
-          color: colors.text,
-          fontSize: typography.title.fontSize,
-          fontWeight: typography.title.fontWeight,
-          marginBottom: spacing.sm,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        Mi Semana
-      </Text>
+        <Text
+          style={{
+            color: colors.text,
+            fontSize: typography.title.fontSize,
+            fontWeight: typography.title.fontWeight,
+          }}
+        >
+          Mi Semana
+        </Text>
+
+        <TouchableOpacity onPress={handleResetWeek}>
+          <MaterialCommunityIcons
+            name="restart"
+            size={24}
+            color={colors.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
 
       <Text
         style={{
@@ -179,23 +226,6 @@ export default function WeeklyPlanning() {
           />
         </View>
       </View>
-
-      <TouchableOpacity
-        onPress={() => router.push("/stats")}
-        style={{
-          backgroundColor: colors.surface,
-          padding: spacing.md,
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: colors.border,
-          marginBottom: spacing.lg,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: colors.text, fontWeight: "600" }}>
-          📈 Ver estadísticas
-        </Text>
-      </TouchableOpacity>
 
       {days.map((day) => (
         <DayCard

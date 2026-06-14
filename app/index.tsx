@@ -38,7 +38,7 @@ export default function Index() {
       </Text>
 
       <TouchableOpacity
-        onPress={() => router.push("/weekly-planning")}
+        onPress={() => router.push("/tabs/weekly-planning")}
         style={{
           backgroundColor: colors.primary,
           paddingVertical: spacing.md,
