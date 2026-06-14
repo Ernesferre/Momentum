@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../src/theme/colors";
 import { spacing } from "../src/theme/spacing";
 import { typography } from "../src/theme/typography";
@@ -70,6 +71,23 @@ export default function StatsScreen() {
         paddingTop: 64,
       }}
     >
+      <TouchableOpacity
+        onPress={() => router.back()}
+        style={{
+          marginBottom: spacing.lg,
+          alignSelf: "flex-start",
+        }}
+      >
+        <Text
+          style={{
+            color: colors.primary,
+            fontSize: 16,
+            fontWeight: "600",
+          }}
+        >
+          ← Mi Semana
+        </Text>
+      </TouchableOpacity>
       <Text
         style={{
           color: colors.text,
