@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { DayCard } from "../src/components/DayCard";
 import { colors } from "../src/theme/colors";
 import { spacing } from "../src/theme/spacing";
@@ -89,12 +89,15 @@ export default function WeeklyPlanning() {
   };
 
   return (
-    <View
+    <ScrollView
       style={{
         flex: 1,
         backgroundColor: colors.background,
+      }}
+      contentContainerStyle={{
         padding: spacing.lg,
         paddingTop: 64,
+        paddingBottom: spacing.xl,
       }}
     >
       <Text
@@ -186,6 +189,6 @@ export default function WeeklyPlanning() {
           onDeleteHabit={handleDeleteHabit}
         />
       ))}
-    </View>
+    </ScrollView>
   );
 }
